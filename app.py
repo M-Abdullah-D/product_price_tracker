@@ -70,6 +70,22 @@ try:
 except Exception:
     print("Failed to load the page after scrolling.")
     traceback.print_exc()
+
+# Click the currency change element
+try:
+    currency_list_element = WebDriverWait(driver, 3).until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="icp-nav-flyout"]/button'))
+    )
+    currency_list_element.click()
+    currency_element = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, '//*[@id="nav-flyout-icp"]/div[2]/ul[2]/li[2]/a'))
+    )
+    currency_element.click()
+    print("Currency changed successfully.")
+    time.sleep(2)  # Wait for the currency change to complete
+except Exception:
+    print("Failed to change currency.")
+    traceback.print_exc()
 # table = driver.find_element("xpath", "//div[@id='zg-ordered-list']")
 
 
@@ -91,3 +107,9 @@ finally:
             temp_profile_dir.cleanup()
         except Exception:
             pass
+
+
+
+
+
+# //*[@id="icp-nav-flyout"]/button

@@ -94,18 +94,72 @@ time.sleep(2)  # Wait for the book list to load after currency change
 books = driver.find_elements(By.XPATH, '//*[contains(@class,"zg-no-numbers")]')
 print(f"Found {len(books)} books on the page.")
 book_container =".//span/div/div/div/div[2]/span/div"
-for book in books[:5]:  # Just print the first 5 books for testing
+books_URLs = []
+for book in books:  # Just print the first 5 books for testing
     try:
         URL = book.find_element(By.XPATH, f'{book_container}/div/div/a').get_attribute('href')
-        title_element = book.find_element(By.XPATH, f'{book_container}/div/div/a/span/div')
-        title = title_element.text
-        price_element = book.find_element(By.XPATH, f'{book_container}/div/div/div[4]')
-        price = price_element.text
-        # print(f"URL: {URL}, Title: {title}, Price: {price}")
+        books_URLs.append(URL)
     except Exception:
         print("Failed to extract book information.")
         traceback.print_exc()
+print(f"Extracted URLs: {len(books_URLs)}")
 
+# open the first book URL to test if it works
+for url in books_URLs[:5]:  # Just test the first 5 URLs for now
+    try:
+        driver.get(url)
+        title_element = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, 'productTitle'))
+        )
+        print(f"Successfully navigated to the {books_URLs.index(url)+1} book: {title_element.text}")
+# Extract the author name
+        Author_element = driver.find_element(By.XPATH, '//*[@id="bylineInfo"]/span[1]/a')
+       
+# The Price Section:
+        # Check if the Kindle version is available and print its price
+        kindle_= driver.find_element(By.XPATH, '//*[@id="a-autoid-0-announce"]/span[1]/span')
+        if kindle_.text == "Kindle":
+            Kindle_price_element = driver.find_element(By.XPATH, '//*[@id="a-autoid-0-announce"]/span[2]/span')
+            Kindle_price = Kindle_price_element.text
+        else:
+            print("Kindle version not available.")
+        # Check if the Audiobook version is available and print its price
+        audiobook_ = driver.find_element(By.XPATH, '//*[@id="a-autoid-1-announce"]/span[1]/span')
+        if audiobook_.text == "Audiobook":
+            Audiobook_price_element = driver.find_element(By.XPATH, '//*[@id="a-autoid-1-announce"]/span[2]/span')
+            Audiobook_price = Audiobook_price_element.text
+        else:
+            print("Audiobook version not available.")
+        # Check if the Hardcover version is available and print its price
+        hardcover_ = driver.find_element(By.XPATH, '//*[@id="a-autoid-2-announce"]/span[1]/span')
+        if hardcover_.text == "Hardcover":
+            Hardcover_price_element = driver.find_element(By.XPATH, '//*[@id="a-autoid-2-announce"]/span[2]/span')
+            Hardcover_price = Hardcover_price_element.text
+        else:
+            print("Hardcover version not available.")
+        # Check if the Paperback version is available and print its price
+        paperback_ = driver.find_element(By.XPATH, '//*[@id="a-autoid-3-announce"]/span[1]/span')
+        if paperback_.text == "Paperback":
+            Paperback_price_element = driver.find_element(By.XPATH, '//*[@id="a-autoid-3-announce"]/span[2]/span')
+            Paperback_price = Paperback_price_element.text
+        else:
+            print("Paperback version not available.")
+        
+        
+        
+
+        
+
+    
+    
+    
+    
+    
+    
+    
+    except Exception:
+        print(f"Failed to navigate to the book URL: {url}")
+        traceback.print_exc()
 
 
 

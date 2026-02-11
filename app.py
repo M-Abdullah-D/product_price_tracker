@@ -11,7 +11,7 @@ import traceback, os
 # Adding the domain and the category pages to be scraped
 domain="https://www.amazon.com"
 book_shelf="Best-Sellers-Books-Business-Development-Entrepreneurship/zgbs/books/2741"
-page=2
+page=1
 website=f"{domain}/{book_shelf}/?_encoding=UTF8&pg={page}&language=en_US&currency=USD"
 
 # Driver options
@@ -60,19 +60,9 @@ try:
 except Exception:
     print(f"Failed to navigate to {website}")
     traceback.print_exc()
-# add scrolling to the bottom of the page to load all content
-driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-try:
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, '//div[contains(@id, "p13n-asin-index-49")]'))
-    )
-    print("Page loaded successfully after scrolling.")
-except Exception:
-    print("Failed to load the page after scrolling.")
-    traceback.print_exc()
-
 # Click the currency change element
 try:
+    time.sleep(3)  # Wait for the page to stabilize before clicking
     currency_list_element = WebDriverWait(driver, 3).until(
         EC.element_to_be_clickable((By.XPATH, '//*[@id="icp-nav-flyout"]/button'))
     )
@@ -86,7 +76,36 @@ try:
 except Exception:
     print("Failed to change currency.")
     traceback.print_exc()
-# table = driver.find_element("xpath", "//div[@id='zg-ordered-list']")
+
+# add scrolling to the end of the list to load all content
+try:
+    element = driver.find_element(By.XPATH, '//*[@id="endOfList"]')
+    driver.execute_script("arguments[0].scrollIntoView();", element)
+    # WebDriverWait(driver, 10).until(
+    #     EC.presence_of_element_located((By.XPATH, '//div[contains(@id, "p13n-asin-index-49")]'))
+    # )
+    print("Page loaded successfully after scrolling.")
+except Exception:
+    print("Failed to load the page after scrolling.")
+    traceback.print_exc()
+
+# book_list = driver.find_element(By.XPATH, '//*[contains(@class, "_cDEzb_grid-row_3Cywl")]')
+time.sleep(2)  # Wait for the book list to load after currency change
+books = driver.find_elements(By.XPATH, '//*[contains(@class,"zg-no-numbers")]')
+print(f"Found {len(books)} books on the page.")
+book_container =".//span/div/div/div/div[2]/span/div"
+for book in books[:5]:  # Just print the first 5 books for testing
+    try:
+        URL = book.find_element(By.XPATH, f'{book_container}/div/div/a').get_attribute('href')
+        title_element = book.find_element(By.XPATH, f'{book_container}/div/div/a/span/div')
+        title = title_element.text
+        price_element = book.find_element(By.XPATH, f'{book_container}/div/div/div[4]')
+        price = price_element.text
+        # print(f"URL: {URL}, Title: {title}, Price: {price}")
+    except Exception:
+        print("Failed to extract book information.")
+        traceback.print_exc()
+
 
 
 
@@ -112,4 +131,4 @@ finally:
 
 
 
-# //*[@id="icp-nav-flyout"]/button
+# # Notes

@@ -1,10 +1,11 @@
 from selenium import webdriver
 from paths import webdriver_path, browser_path, profile_path
+from selenium.webdriver.chrome.service import Service
 
 
 
 
-
+__all__ = ["domain", "book_shelf", "website", "options", "XPATHS"]
 
 # Adding the domain and the category pages to be scraped
 domain="https://www.amazon.com"
@@ -29,6 +30,8 @@ else:
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--headless=new")      # Uncomment this after we make sure the code is working, this will run the browser in headless mode
+
+
 
 
 

@@ -112,10 +112,9 @@ while current_page <= last_page:
         sleep(2)  # Wait for the book list to load after currency change
         books = driver.find_elements(By.XPATH, '//*[contains(@class,"zg-no-numbers")]')
         logging.info(f"Found {len(books)} books on the page.")
-        book_container =".//span/div/div/div/div[2]/span/div"
         for book in books: 
             try:
-                URL = book.find_element(By.XPATH, f'{book_container}/div/div/a').get_attribute('href')
+                URL = book.find_element(By.XPATH, './/span/div/div/div/div[2]/span/div/div/div/a').get_attribute('href')
                 books_URLs.append(URL)
             except Exception:
                 logging.info("Failed to extract book information.")
@@ -142,7 +141,7 @@ while current_page <= last_page:
 #         try:
 #             sleep(2)  # Wait for the page to load
 #             title_element = WebDriverWait(driver, 10).until(
-#                 EC.presence_of_element_located((By.ID, 'productTitle'))
+#                 EC.presence_of_element_located((By.XPATH, '//*[@id="productTitle"]'))
 #             )
 #             title = title_element.text
 #             Title_list.append(title)

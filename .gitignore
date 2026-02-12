@@ -53,6 +53,7 @@ cover/
 
 # Files
 paths.py
+books_data_1.csv
 
 # Translations
 *.mo

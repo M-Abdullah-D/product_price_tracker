@@ -1,12 +1,13 @@
-class Book:
-    def __init__(self):
-        self.title = title
-        self.author = Author
-        self.reviews_rate = Reviews_Rate
-        self.reviews_number = Reviews_Number
-        self.kindle = Kindle_price
-        self.paperback = Paperback_price
-        self.hardcover = Hardcover_price
-        self.audiobook = Audiobook_price
+
+
+Title_list = []
+Author_list = []
+Reviews_Rate_list = []
+Reviews_Number_list = []
+Kindle_price_list = []
+Audiobook_price_list = []
+Hardcover_price_list = []
+Paperback_price_list = []
+books_URLs = []
 
     

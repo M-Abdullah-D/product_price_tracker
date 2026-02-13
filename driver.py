@@ -1,4 +1,4 @@
-from config import options,temp_profile_dir
+from config import temp_profile_dir
 import logging
 import traceback
 import os
@@ -11,7 +11,7 @@ from selenium.webdriver.chrome.service import Service
 logpath = 'chromedriver_test.log'
 service = Service(webdriver_path, log_path=logpath)
 
-def initialize_driver(config):
+def initialize_driver(options):
     try:
         driver = webdriver.Chrome(service=service, options=options)
         logging.info("WebDriver initialized successfully.")

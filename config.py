@@ -1,6 +1,5 @@
 from selenium import webdriver
-from paths import webdriver_path, browser_path, profile_path
-from selenium.webdriver.chrome.service import Service
+from paths import  browser_path, profile_path
 
 
 
@@ -29,7 +28,7 @@ else:
     options.add_argument(f"--user-data-dir={profile_path}")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
-options.add_argument("--headless=new")      # Uncomment this after we make sure the code is working, this will run the browser in headless mode
+# options.add_argument("--headless=new")      # Uncomment this after we make sure the code is working, this will run the browser in headless mode
 
 
 

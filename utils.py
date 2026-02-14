@@ -5,27 +5,29 @@ from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
 import logging
 
+logger = logging.getLogger(__name__)
 
 
 def change_currency(driver): 
     try:
         sleep(2)
-        Selcting_currency(
+        select_currency(
             driver, "currency_list", "Clicked on the currency list."
         )
-        Selcting_currency(
+        select_currency(
             driver, "currency_element", "Selected the desired currency."
         )
     except Exception as e:
-        logging.error(f"Failed to change currency: {e}")
+        logger.error("Failed to change currency: %s", e)
 
-def Selcting_currency(driver, arg1, arg2):
-        # Click on the currency list to open the dropdown
+
+def select_currency(driver, arg1, arg2):
+    # Click on the currency list to open the dropdown
     currency_list = WebDriverWait(driver, 3).until(
         EC.element_to_be_clickable((By.XPATH, XPATHS[arg1]))
     )
     currency_list.click()
-    logging.info(arg2)
+    logger.info(arg2)
 
 
 def scroll_the_page(driver):

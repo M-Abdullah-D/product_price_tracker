@@ -1,92 +1,75 @@
 import logging
 from selenium.webdriver.common.by import By
 import traceback
-from models import Title_list, Author_list, Reviews_Rate_list, Reviews_Number_list, Kindle_price_list, Paperback_price_list, Hardcover_price_list, Audiobook_price_list
+from typing import Tuple
+from models import Book
+from config import XPATHS
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
+
+logger = logging.getLogger(__name__)
 
 
-def extract_element_text(driver, xpath, target_list, success_message, failure_message):
-    """Extract text from an element by XPath and append to a list."""
+def _get_text(driver, xpath: str) -> str:
+    """Return element text for xpath or empty string if missing."""
     try:
-        element = driver.find_element(By.XPATH, xpath)
-        text = element.text
-        target_list.append(text)
-        logging.info(success_message)
+        el = driver.find_element(By.XPATH, xpath)
+        return el.text.strip()
     except Exception:
-        logging.info(failure_message)
-        target_list.append("X")
+        logger.debug("Element not found for xpath %s", xpath, exc_info=True)
+        return ""
 
 
-def extract_format_price(driver, format_name, format_index, price_list):
-    """Extract price for a specific book format."""
+def extract_format_price(driver, label_xpath_key: str, price_xpath_key: str) -> str:
+    """Return price text for a specific format or empty string."""
     try:
-        format_element = driver.find_element(By.XPATH, f'//*[@id="a-autoid-{format_index}-announce"]/span[1]/span')
-        if format_element.text == format_name:
-            price_element = driver.find_element(By.XPATH, f'//*[@id="a-autoid-{format_index}-announce"]/span[2]/span')
-            price = price_element.text
-            price_list.append(price)
-            logging.info(f"Successfully extracted the {format_name} price.")
-        else:
-            logging.info(f"{format_name} version not available.")
-            price_list.append("X")
+        label = _get_text(driver, XPATHS.get(label_xpath_key))
+        if not label:
+            return ""
+        price = _get_text(driver, XPATHS.get(price_xpath_key))
+        return price or ""
     except Exception:
-        logging.info(f"{format_name} version not available.")
-        price_list.append("X")
+        logger.debug("Failed to extract format price for %s", price_xpath_key, exc_info=True)
+        return ""
 
 
 
 
 
-def extract_title(driver):
-    extract_element_text(
-        driver,
-        '//*[@id="productTitle"]',
-        Title_list,
-        "Successfully extracted the book title.",
-        "Failed to extract the book title."
-    )
+def extract_title(driver) -> str:
+    return _get_text(driver, XPATHS.get("title_element"))
 
 
-def extract_author(driver):
-    extract_element_text(
-        driver,
-        '//*[@id="bylineInfo"]/span[1]/a',
-        Author_list,
-        "Successfully extracted the author name.",
-        "Failed to extract the author name."
-    )
+def extract_author(driver) -> str:
+    return _get_text(driver, XPATHS.get("Author_element"))
 
-def extract_reviews(driver):
-    extract_element_text(
-        driver,
-        '//*[@id="acrPopover"]/span/a/span',
-        Reviews_Rate_list,
-        "Successfully extracted the reviews information.",
-        "Failed to extract the reviews information."
-    )
-    extract_element_text(
-        driver,
-        '//*[@id="acrCustomerReviewText"]',
-        Reviews_Number_list,
-        "Successfully extracted the reviews information.",
-        "Failed to extract the reviews information."
-    )
+def extract_reviews(driver) -> Tuple[str, str]:
+    rate = _get_text(driver, XPATHS.get("Reviews_Rate_element"))
+    number = _get_text(driver, XPATHS.get("Reviews_Number_element"))
+    return rate, number
 
-def extract_prices(driver):
-    extract_format_price(driver, "Kindle", 0, Kindle_price_list)
-    extract_format_price(driver, "Audiobook", 1, Audiobook_price_list)
-    extract_format_price(driver, "Hardcover", 2, Hardcover_price_list)
-    extract_format_price(driver, "Paperback", 3, Paperback_price_list)
+def extract_prices(driver) -> Tuple[str, str, str, str]:
+    kindle = extract_format_price(driver, "Kindle", "Kindle_price_element")
+    audiobook = extract_format_price(driver, "Audiobook", "Audiobook_price_element")
+    hardcover = extract_format_price(driver, "Hardcover", "Hardcover_price_element")
+    paperback = extract_format_price(driver, "Paperback", "Paperback_price_element")
+    return kindle, audiobook, hardcover, paperback
 
 
-def extract_book_data(driver, url):
-    """Navigate to the book URL and extract all relevant data."""
+def extract_book_data(driver, url: str) -> Book:
+    """Navigate to `url` and return a populated Book object (never mutate globals)."""
+    book = Book(url=url)
     try:
         driver.get(url)
-        logging.info(f"Navigated to {url} successfully.")
-        extract_title(driver)
-        extract_author(driver)
-        extract_reviews(driver)
-        extract_prices(driver)
+        logger.info("Navigated to %s", url)
+
+        book.title = extract_title(driver)
+        book.author = extract_author(driver)
+        book.reviews_rate, book.reviews_number = extract_reviews(driver)
+        (book.kindle_price,
+         book.audiobook_price,
+         book.hardcover_price,
+         book.paperback_price) = extract_prices(driver)
+
     except Exception:
-        logging.info(f"Failed to navigate to {url} or extract data.")
-        traceback.print_exc()
+        logger.exception("Failed to extract book data for %s", url)
+    return book

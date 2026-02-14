@@ -1,27 +1,22 @@
 import pandas as pd
 import logging
-from models import Title_list, Author_list, Reviews_Rate_list, Reviews_Number_list, Kindle_price_list, Audiobook_price_list, Hardcover_price_list, Paperback_price_list
+from dataclasses import asdict
+from typing import List
+from models import Book
+
+logger = logging.getLogger(__name__)
 
 
-
-def create_dataframe():
+def create_dataframe(books: List[Book]) -> pd.DataFrame:
     """Create a DataFrame from a list of Book objects."""
-    data = {
-        "Title": Title_list,
-        "Author": Author_list,
-        "Reviews_Rate": Reviews_Rate_list,
-        "Reviews_Number": Reviews_Number_list,
-        "Kindle_Price": Kindle_price_list,
-        "Audiobook_Price": Audiobook_price_list,
-        "Hardcover_Price": Hardcover_price_list,
-        "Paperback_Price": Paperback_price_list
-    }
-    df = pd.DataFrame(data)
-    logging.info("DataFrame created successfully.")
+    rows = [asdict(b) for b in books]
+    df = pd.DataFrame(rows)
+    logger.info("DataFrame created successfully. Rows=%s", len(df))
     return df
 
-def save_to_csv(filename):
-    """Save the DataFrame to a CSV file."""
-    df = create_dataframe()
+
+def save_to_csv(filename: str, books: List[Book]) -> None:
+    """Save the provided books to a CSV file."""
+    df = create_dataframe(books)
     df.to_csv(filename, index=False)
-    logging.info(f"Data saved to {filename} successfully.")
+    logger.info("Data saved to %s successfully.", filename)

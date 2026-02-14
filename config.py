@@ -28,7 +28,7 @@ else:
     options.add_argument(f"--user-data-dir={profile_path}")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
-# options.add_argument("--headless=new")      # Uncomment this after we make sure the code is working, this will run the browser in headless mode
+options.add_argument("--headless=new")      # Uncomment this after we make sure the code is working, this will run the browser in headless mode
 
 
 
@@ -42,7 +42,7 @@ XPATHS = {
     "end_of_page": '//*[@id="endOfList"]',
     "books": '//*[contains(@class,"zg-no-numbers")]',
     "URL":'.//span/div/div/div/div[2]/span/div/div/div/a',
-    "next_page": '//*[@id="CardInstanceTJXUd2yD4hIsSwroLLmNtw"]/div[2]/nav/ul/li[4]',
+    "next_page": '//*[contains(@class,"a-last")]',
     "title_element": '//*[@id="productTitle"]',
     "Author_element": '//*[@id="bylineInfo"]/span[1]/a',
     "Reviews_Rate_element":'//*[@id="acrPopover"]/span/a/span',

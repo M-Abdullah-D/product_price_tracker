@@ -1,6 +1,5 @@
 import logging
 from selenium.webdriver.common.by import By
-from time import sleep
 from typing import Tuple
 from models import Book
 from config import XPATHS

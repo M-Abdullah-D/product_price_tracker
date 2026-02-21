@@ -3,14 +3,12 @@ import logging
 import traceback
 import os
 from selenium import webdriver
-from paths import webdriver_path
 from selenium.webdriver.chrome.service import Service
 from contextlib import contextmanager
 
 
 # service configuration and error handling
 logpath = 'chromedriver_test.log'
-service = Service(webdriver_path, log_path=logpath)
 
 @contextmanager
 def driver_context(options):
@@ -19,7 +17,7 @@ def driver_context(options):
     """
     driver = None
     try:
-        driver = webdriver.Chrome(service=service, options=options)
+        driver = webdriver.Chrome(options=options)
         logging.info("Webdriver initialized successfully")
         yield driver
     except Exception:

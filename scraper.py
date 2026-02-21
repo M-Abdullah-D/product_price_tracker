@@ -29,15 +29,27 @@ def get_last_page(driver):
         return 1
 
 
-def extract_book_urls(driver,start_page,page_limit):
+def extract_book_urls(driver,start_page:int,page_limit:int):
     books_urls = []
     last_page = get_last_page(driver)
     if page_limit == 0:
-        page_limit = last_page       # if the page limit is given the value of 0 it should go for all
+        end_page = last_page 
+    else:
+        min(start_page + page_limit -1,last_page)     # if the page limit is given the value of 0 it should go for all
+ 
+    if start_page < 1:
+        logger.error("The pages start with page 1")
+        return[]
+    if page_limit <0: 
+        logger.error("The number of pages to navigate can not be negative")
+        return[]
+    if start_page > last_page:
+        logger.error("The start page is out of the available page range")
+        return[]
 
-    while start_page <= page_limit:
+    for _ in range(start_page, end_page + 1):
         try:
-            logger.info(f"Processing page {start_page} of {last_page}")
+            logger.info(f"Processing page {start_page} of {end_page}")
             navigate_to_website(driver, start_page)
             if start_page == 1:
                 change_currency(driver)

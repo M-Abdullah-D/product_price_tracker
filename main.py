@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 def build_parser():
     p = argparse.ArgumentParser(description="Product price tracker scraper")
+    p.add_argument("--interactive",action="store_true", help="initialize the command mode")
     p.add_argument("-o", "--output", default=None, help="Output CSV filename")
     p.add_argument("-n", "--max-books", type=int, default=None, help="Maximum number of books to scrape (0 = all)")
     p.add_argument("--headless", action="store_true", help="Run browser in headless mode (overrides config)")
@@ -38,26 +39,30 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
    
-    # Prompt for start page if not provided:
-    if args.start_page is None:
-        args.start_page = int(input("Specify the number of the first page to navigate (1 for first page): ") or 1)
-    
-    # Prompt for page limit if not provided:
-    if args.page_limit is None:
-        args.page_limit = int(input("Specify the number of pages to navigate (0 for all): ") or 0)
-    
-    # Prompt for books number if not provided via CLI
-    if args.max_books is None:
-        args.max_books = int(input("Specify the number of books to scrape (0 for all): ") or 0)
-    # Validate
-    if args.max_books < 0:
-        logger.error("max_books must be non-negative")
-        return
-    
-    # Prompt for output filename if not provided via CLI
     if  args.output is None:
-        args.output = input("Enter output CSV filename (defult: Scraped_books.csv): ").strip() or "Scraped_books.csv"
-    # Ensure .csv extension
+        if args.interactive:
+            # Prompt for start page if not provided:
+            if args.start_page is None:
+                args.start_page = int(input("Specify the first page to navigate (1 for first page): ") or 1)
+            
+            # Prompt for page limit if not provided:
+            if args.page_limit is None:
+                args.page_limit = int(input("Specify the number of pages to navigate (0 for all): ") or 0)
+            
+            # Prompt for books number if not provided via CLI
+            if args.max_books is None:
+                args.max_books = int(input("Specify the number of books to scrape (0 for all): ") or 0)
+            # Validate
+            if args.max_books < 0:
+                logger.error("max_books must be non-negative")
+                return
+            # Prompt for output filename if not provided via CLI
+            args.output = input("Enter output CSV filename (default: Scraped_books.csv): ").strip() 
+        else:
+            args.output = "Scraped_books.csv"
+            args.start_page = 1
+            args.page_limit = 0
+        # Ensure .csv extension
     if not args.output.endswith('.csv'):
         args.output += '.csv'
 

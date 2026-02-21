@@ -29,22 +29,23 @@ def get_last_page(driver):
         return 1
 
 
-def extract_book_urls(driver):
+def extract_book_urls(driver,start_page,page_limit):
     books_urls = []
     last_page = get_last_page(driver)
-    current_page = 1
+    if page_limit == 0:
+        page_limit = last_page       # if the page limit is given the value of 0 it should go for all
 
-    while current_page <= last_page:
+    while start_page <= page_limit:
         try:
-            logger.info(f"Processing page {current_page} of {last_page}")
-            navigate_to_website(driver, current_page)
-            if current_page == 1:
+            logger.info(f"Processing page {start_page} of {last_page}")
+            navigate_to_website(driver, start_page)
+            if start_page == 1:
                 change_currency(driver)
             scroll_the_page(driver)
             sleep(2)  # Wait for the book list to load after currency change
 
             books = driver.find_elements(By.XPATH, XPATHS["books"])
-            logger.info("Found %s books on page %s", len(books), current_page)
+            logger.info("Found %s books on page %s", len(books), start_page)
             for item in books:
                 try:
                     url = item.find_element(By.XPATH, XPATHS["URL"]).get_attribute('href')
@@ -53,15 +54,9 @@ def extract_book_urls(driver):
                     logger.exception("Failed to extract book URL from an item")
             logger.info("Extracted URLs (total): %s", len(books_urls))
 
-            current_page += 1
-            try:
-                next_page = driver.find_element(By.XPATH, XPATHS["next_page"])
-                next_page.click()
-            except Exception:
-                logger.info("No next-page element found; finishing pagination")
-                break
+            start_page += 1
         except Exception:
-            logger.exception("Error while processing page %s", current_page)
+            logger.exception("Error while processing page %s", start_page)
             break
 
     return books_urls

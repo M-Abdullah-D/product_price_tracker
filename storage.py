@@ -10,9 +10,7 @@ logger = logging.getLogger(__name__)
 def create_dataframe(books: List[Book]) -> pd.DataFrame:
     """Create a DataFrame from a list of Book objects."""
     rows = [asdict(b) for b in books]
-    df = pd.DataFrame(rows)
-    logger.info("DataFrame created successfully. Rows=%s", len(df))
-    return df
+    return pd.DataFrame(rows)
 
 
 def save_to_csv(filename: str, books: List[Book]) -> None:
@@ -20,3 +18,8 @@ def save_to_csv(filename: str, books: List[Book]) -> None:
     df = create_dataframe(books)
     df.to_csv(filename, index=False)
     logger.info("Data saved to %s successfully.", filename)
+
+
+def save_failures_csv(path:str,failures:list[dict])-> None:
+    df = pd.DataFrame(failures)
+    df.to_csv(path,index=False)

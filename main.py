@@ -4,7 +4,8 @@ from config import options
 from driver import driver_context
 from scraper import extract_book_urls
 from parser import extract_book_data
-from storage import save_to_csv
+from storage import save_to_csv, save_failures_csv
+from datetime import datetime,timezone
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -39,29 +40,39 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
    
-    if  args.output is None:
-        if args.interactive:
-            # Prompt for start page if not provided:
-            if args.start_page is None:
-                args.start_page = int(input("Specify the first page to navigate (1 for first page): ") or 1)
-            
-            # Prompt for page limit if not provided:
-            if args.page_limit is None:
-                args.page_limit = int(input("Specify the number of pages to navigate (0 for all): ") or 0)
-            
-            # Prompt for books number if not provided via CLI
-            if args.max_books is None:
-                args.max_books = int(input("Specify the number of books to scrape (0 for all): ") or 0)
-            # Validate
-            if args.max_books < 0:
-                logger.error("max_books must be non-negative")
-                return
-            # Prompt for output filename if not provided via CLI
-            args.output = input("Enter output CSV filename (default: Scraped_books.csv): ").strip() 
-        else:
+    if args.interactive:
+        # Prompt for start page if not provided:
+        if args.start_page is None:
+            args.start_page = int(input("Specify the first page to navigate (1 for first page): ") or 1)
+        if args.start_page < 1:
+            logger.error("start_page must be >= 1")
+            return
+        
+        # Prompt for page limit if not provided:
+        if args.page_limit is None:
+            args.page_limit = int(input("Specify the number of pages to navigate (0 for all): ") or 0)
+        if args.page_limit < 0:
+            logger.error("page_limit must be >= 0")
+            return
+        
+        # Prompt for books number if not provided via CLI
+        if args.max_books is None:
+            args.max_books = int(input("Specify the number of books to scrape (0 for all): ") or 0)
+        if args.max_books < 0:
+            logger.error("max_books must be non-negative")
+            return
+        # Prompt for output filename if not provided via CLI
+        if  args.output is None:
+            args.output = input("Enter output CSV filename (default: Scraped_books.csv): ").strip() or "Scraped_books.csv"
+    else:
+        if args.output is None: 
             args.output = "Scraped_books.csv"
+        if args.start_page is None:
             args.start_page = 1
+        if args.page_limit is None:
             args.page_limit = 0
+        if args.max_books is None:
+            args.max_books = 0
         # Ensure .csv extension
     if not args.output.endswith('.csv'):
         args.output += '.csv'
@@ -73,6 +84,7 @@ def main():
     apply_cli_to_options(options, args)
 
     books = []
+    failures = []
     with driver_context(options) as driver:
         urls = extract_book_urls(driver,start_page=args.start_page,page_limit=args.page_limit)
         if args.max_books and args.max_books > 0:
@@ -80,13 +92,27 @@ def main():
 
         for i, url in enumerate(urls, start=1):
             logger.info("Processing %s/%s: %s", i, len(urls), url)
-            book = extract_book_data(driver, url)
-            books.append(book)
-            if args.max_books and i >= args.max_books:
-                break
+            try:
+                book = extract_book_data(driver, url)
+                books.append(book)
+            except Exception as e:
+                logger.exception("Failed processing URL:%s",url)
+                failures.append({
+                    "index":i,
+                    "url":url,
+                    "failed_at":datetime.now(timezone.utc).isoformat(),
+                    "error_type":type(e).__name__,
+                    "error_message":str(e),
+                })
+                continue
 
     save_to_csv(args.output, books)
-    logger.info("Saved %s books to %s", len(books), args.output)
+    if failures:
+        failures_path = args.output.replace(".csv", ".failures.csv")
+        save_failures_csv(failures_path, failures)
+        logger.info("Saved %s books to %s and %s failures to %s", len(books), args.output,len(failures),failures_path)
+    else:
+        logger.info("Saved %s books to %s, (0 failures)", len(books), args.output)
 
 
 if __name__ == "__main__":

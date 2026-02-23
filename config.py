@@ -1,5 +1,7 @@
 from selenium import webdriver
-from paths import  browser_path, profile_path
+from dotenv import load_dotenv
+import os
+import tempfile
 
 
 
@@ -14,18 +16,26 @@ website=f"{domain}/{book_shelf}/?_encoding=UTF8&language=en_US&currency=USD"
 
 
 # Driver options
+load_dotenv()
 options = webdriver.ChromeOptions()
-options.binary_location = browser_path
 use_temp_profile = True
+if use_temp_profile:
+    required = ["BROWSER_PATH"]
+else:
+    required = ["BROWSER_PATH", "CHROME_PROFILE_PATH"]
+if missing:= [var for var in required if not os.getenv(var)]:
+    raise ValueError(f"Missing required environment variables: {missing}")
+
+options.binary_location = os.getenv('BROWSER_PATH')
+
 # When using a temporary profile, create a TemporaryDirectory object
 # and pass its path to the browser; cleanup it up later.
 temp_profile_dir = None
 if use_temp_profile:
-    import tempfile
     temp_profile_dir = tempfile.TemporaryDirectory(prefix="brave_profile_")
     options.add_argument(f"--user-data-dir={temp_profile_dir.name}")
 else:
-    options.add_argument(f"--user-data-dir={profile_path}")
+    options.add_argument(f"--user-data-dir={os.getenv('CHROME_PROFILE_PATH')}")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--headless=new")      # Uncomment this after we make sure the code is working, this will run the browser in headless mode

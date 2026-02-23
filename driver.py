@@ -1,6 +1,5 @@
 from config import temp_profile_dir
 import logging
-import traceback
 import os
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service

@@ -52,7 +52,6 @@ coverage.xml
 cover/
 
 # Files
-paths.py
 books_data.csv
 
 # Translations

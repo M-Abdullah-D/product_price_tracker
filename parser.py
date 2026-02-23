@@ -14,24 +14,22 @@ def _get_text(driver, xpath: str) -> str:
     """Return element text for xpath or empty string if missing."""
     try:
         el = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, xpath)))
-        el = driver.find_element(By.XPATH, xpath)
         return el.text.strip()
     except Exception:
         logger.debug("Element not found for xpath %s", xpath, exc_info=True)
         return ""
 
 
-def extract_format_price(driver, label_xpath_key: str, price_xpath_key: str) -> str:
-    """Return price text for a specific format or empty string."""
+def extract_format_price(driver, label_xpath_key: str, price_xpath_key: str) -> float | None:
+    """Return price for a specific format or None value."""
     try:
-        label = _get_text(driver, XPATHS.get(label_xpath_key))
-        if not label:
+        if label:=_get_text(driver,XPATHS.get(label_xpath_key)):
+            return float(_get_text(driver, XPATHS.get(price_xpath_key)).strip("$"))
+        else:
             return None
-        price = float(_get_text(driver, XPATHS.get(price_xpath_key)).strip("$"))
-        return price or None
     except Exception:
         logger.debug("Failed to extract format price for %s", price_xpath_key, exc_info=True)
-        return ""
+        return None
 
 
 
@@ -67,6 +65,7 @@ def extract_prices(driver) -> Tuple[float, float, float, float]:
 def _navigate_to_url(driver, url: str) -> None:
     """Navigate to the specified URL and log the action."""
     driver.get(url)
+    WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH, XPATHS["title_element"])))
     logger.info("Navigated to %s", url)
 
 
